@@ -9,6 +9,7 @@ class Player(CircleShape):
         super().__init__(x,y,PLAYER_RADIUS)
         # Initialize rotation angle to 0 (facing upwards)
         self.rotation = 0
+        self.timer=0
     
     def triangle(self):
         # Calculate forward direction vector based on current rotation
@@ -35,7 +36,7 @@ class Player(CircleShape):
     def update(self, dt):
     # Check for key presses to handle player movement
         keys = pygame.key.get_pressed()
-
+        self.timer-=dt
         if keys[pygame.K_a]:
             # Rotate player counter-clockwise when 'A' key is pressed
             self.rotate(-dt)
@@ -61,6 +62,9 @@ class Player(CircleShape):
         # This gives us the distance to move this frame while maintaining consistent speed
         self.position += forward * PLAYER_SPEED * dt
     def shoot(self):
+        if self.timer >0:
+            return
+        self.timer=PLAYER_SHOOT_COOLDOWN
         shot = Shot(self.position.x, self.position.y)
         shot.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
 

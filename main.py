@@ -6,65 +6,86 @@ from Asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
 
+
 def main():
     # Initialize the pygame module
     pygame.init()
+    # Create a clock object to control frame rate
     fps_clock = pygame.time.Clock()
+    # Set desired frame rate to 60 FPS
     fps_rate = 60
+    # Initialize delta time (time since last frame) to 0
     dt = 0
-    # Create two sprite groups: one for objects that need updating, one for objects that need drawing
-    updatable = pygame.sprite.Group()  # Group to hold all game objects that need updating each frame
-    drawable = pygame.sprite.Group()   # Group to hold all game objects that need to be drawn each frame
+    
+    # Create sprite groups for game objects
+    # Group for objects that need updating each frame
+    updatable = pygame.sprite.Group()
+    # Group for objects that need to be drawn each frame
+    drawable = pygame.sprite.Group()
+    # Separate group for asteroids to handle collisions
     asteroids = pygame.sprite.Group()
-    shots=pygame.sprite.Group()
-    # Assign containers for the classes
+    # Separate group for shots to handle collisions
+    shots = pygame.sprite.Group()
+    
+    # Assign container groups to game object classes
+    # Shots will be added to shots, updatable, and drawable groups
     Shot.containers = (shots, updatable, drawable)
+    # Asteroids will be added to asteroids, updatable, and drawable groups
     Asteroid.containers = (asteroids, updatable, drawable)
+    # AsteroidField will only be added to updatable group
     AsteroidField.containers = updatable
-    # Create instance of AsteroidField
+    # Create the asteroid field instance
     asteroid_field = AsteroidField()
+    # Player will be added to updatable and drawable groups
     Player.containers = (updatable, drawable)
     
-    
-    
-    # Set the display mode for the game window
+    # Set up the game window with specified dimensions
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    # Create a player object at the center of the screen
-    player=Player(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)  # Automatically added to updatable and drawable groups
+    # Create player object at center of screen
+    player = Player(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
     
     # Main game loop
     running = True
     while running:
-        # Handle events
+        # Handle events in the event queue
         for event in pygame.event.get():
+            # Check for window close event
             if event.type == pygame.QUIT:
                 running = False
 
         # Clear the screen with navy blue background
         screen.fill((0, 0, 128))
     
-        # Update all game objects
+        # Update all game objects in the updatable group
         updatable.update(dt)
         
-        # Loop through all drawable objects and draw them individually
+        # Draw all objects in the drawable group
         for drawable_object in drawable:
             drawable_object.draw(screen)
-        
-        # Check for collisions between player and asteroids
+
+        # Handle collisions
         for ast in asteroids:
+            # Check for collision between player and asteroid
             if ast.detect_collision(player):
                 print("Game Over!")
                 pygame.quit()
-                sys.exit("Try Aagain")
-        
+                sys.exit("Try Again")
+            # Check for collision between shots and asteroids
+            for sht in shots:
+                if ast.detect_collision(sht):
+                    # Remove both shot and asteroid on collision
+                    sht.kill()
+                    ast.split()
+
         # Update the display
         pygame.display.flip()
 
         # Limit frame rate and calculate delta time
         dt = fps_clock.tick(fps_rate) / 1000
 
-    # Clean up and quit
+    # Clean up pygame and exit
     pygame.quit()
+    # Print startup messages
     print("Starting Asteroids!")
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
